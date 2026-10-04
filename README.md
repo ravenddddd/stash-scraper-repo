@@ -64,9 +64,27 @@ scrapers:
 
 ## Working on it
 
-Scrapers are plain YAML in `scrapers/`. A folder containing a `package` file is
-published as a single package; a scraper file outside such a folder is its own
-package.
+Scrapers are plain YAML in `scrapers/`. Every package here is a folder holding a
+`package` file plus one or more scrapers, which is published as a single zip:
+
+```
+scrapers/
+  DLsite-ravend/
+    package                  name: DLsite (ravend)
+    DLsite-ravend.yml
+  DMM-ravend/
+    package                  name: DMM (ravend)
+    DMM-ravend.yml           scenes
+    DMM-ravend-doujin.yml    galleries
+    DMM-ravend-book.yml      galleries
+```
+
+The `package` file is what makes a folder one package instead of one per
+scraper, and it is what sets the package id (the folder name) and its display
+name. A folder with several scrapers and no `package` file would publish each
+scraper separately, with every one of those zips shipping the whole folder.
+Because a package's version is the last commit touching its folder, any edit
+inside a folder bumps that package's version.
 
 ```bash
 deno -R -E ./validate.js      # check scrapers against the schema
