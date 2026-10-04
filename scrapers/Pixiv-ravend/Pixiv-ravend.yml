@@ -1,0 +1,50 @@
+name: Pixiv (ravend)
+galleryByURL:
+  # The artwork page is client rendered (its __NEXT_DATA__ carries ssr: false and
+  # no artwork), so the scraper reads the JSON endpoint the page itself calls
+  # rather than the HTML. queryURLReplace rewrites the artwork URL into it.
+  # Locale-prefixed URLs redirect to the bare form, but the matcher runs on the
+  # URL as given, so each prefix is listed.
+  - action: scrapeJson
+    url:
+      - pixiv.net/artworks/
+      - pixiv.net/en/artworks/
+      - pixiv.net/zh/artworks/
+      - pixiv.net/zh-tw/artworks/
+      - pixiv.net/ko/artworks/
+    queryURL: "{url}"
+    queryURLReplace:
+      url:
+        - regex: ^https?://(?:www\.)?pixiv\.net/(?:[a-z]{2}(?:-[A-Za-z]{2})?/)?artworks/(\d+).*$
+          with: https://www.pixiv.net/ajax/illust/$1
+    scraper: pixivArtwork
+
+jsonScrapers:
+  pixivArtwork:
+    gallery:
+      Title: body.illustTitle
+      URLs: body.extraData.meta.canonical
+      Code: body.illustId
+      # Pixiv has no circle or studio, so the artist is the only credit and
+      # there is no Studio here.
+      Photographer: body.userName
+      Date:
+        selector: body.createDate
+        postProcess:
+          - replace:
+              - regex: ^(\d{4}-\d{2}-\d{2}).*
+                with: $1
+      # illustComment is HTML. Unlike the xPath scrapers, the JSON pipeline
+      # never strips newlines, so a <br /> to newline replace works here and
+      # keeps the paragraph breaks.
+      Details:
+        selector: body.illustComment
+        postProcess:
+          - replace:
+              - regex: <br\s*/?>\s*
+                with: "\n"
+      # Pixiv's own tags, which mix the content tags with its classification
+      # ones (R-18, 漫画, 100users入り). Taken whole, like Melonbooks.
+      Tags:
+        Name: body.tags.tags.#.tag
+# Last Updated Oct 5, 2026

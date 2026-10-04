@@ -17,6 +17,7 @@ https://ravenddddd.github.io/stash-scraper-repo/main/index.yml
 | `DLsite-ravend` | `DLsite-ravend` | `dlsite.com` work pages |
 | `Toranoana-ravend` | `Toranoana-ravend` | `ec.toranoana.jp` item pages, both adult storefronts |
 | `Melonbooks-ravend` | `Melonbooks-ravend` | `melonbooks.co.jp/detail/detail.php` item pages |
+| `Pixiv-ravend` | `Pixiv-ravend` | `pixiv.net/artworks/…` (JSON scraper) |
 
 The `-ravend` suffix keeps these ids from colliding with the community
 repository's `DMM` and `DLsite`. **Stash keys a scraper by its filename**, so two
@@ -85,7 +86,15 @@ scrapers/
   Melonbooks-ravend/
     package                  name: Melonbooks (ravend)
     Melonbooks-ravend.yml
+  Pixiv-ravend/
+    package                  name: Pixiv (ravend)
+    Pixiv-ravend.yml
 ```
+
+Five of the six scrapers use `xPathScrapers`; `Pixiv-ravend` uses `jsonScrapers`
+instead, and rewrites the artwork URL to Pixiv's JSON endpoint through
+`queryURLReplace` — the artwork page is client rendered, so its HTML holds none
+of the fields.
 
 The `package` file is what makes a folder one package instead of one per
 scraper, and it is what sets the package id (the folder name) and its display
