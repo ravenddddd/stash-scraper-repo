@@ -8,10 +8,15 @@ sceneByFragment:
         with: ""
   scraper: sceneQueryScraper
 sceneByURL:
+  # An archived page keeps the original URL inside it
+  # (https://web.archive.org/web/20190612051907/https://www.dmm.co.jp/...), so
+  # this pattern already covers archived DMM pages. A bare web.archive.org/
+  # entry would also match archived pages of every other site, and because
+  # og:title still resolves on those it would return a non-nil result and so
+  # take the URL away from whichever scraper should have handled it.
   - action: scrapeXPath
     url:
       - dmm.co.jp/
-      - web.archive.org/
     scraper: sceneScraper
     queryURL: "{url}"
 sceneByName:
