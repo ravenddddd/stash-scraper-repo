@@ -58,6 +58,13 @@ xPathScrapers:
                 - regex: ^#
                   with: ""
 driver:
+  headers:
+    # Melonbooks answers 403 to Go's default user agent, and Stash sends no
+    # User-Agent header of its own unless the global scraper_user_agent is
+    # set - so the Go http client's "Go-http-client/1.1" is what arrives.
+    # Any browser-ish value clears it; the version below is incidental.
+    - Key: "User-Agent"
+      Value: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
   cookies:
     # Without this every adult item redirects to an age gate, and the page
     # returned has none of the fields above. It is what the gate's 表示する
