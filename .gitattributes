@@ -2,3 +2,6 @@
 
 *.yml   eol=lf diff=yaml linguist-detectable
 *.md    eol=lf diff=markdown
+# The package marker has no extension, so it would otherwise fall under
+# "* text=auto" and come back out of a checkout with CRLF on Windows.
+package eol=lf
