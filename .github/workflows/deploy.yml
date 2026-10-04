@@ -1,10 +1,13 @@
-name: Deploy repository to Github Pages
+name: Deploy repository to GitHub Pages
 
 on:
   push:
-      paths:
+    paths:
       - 'scrapers/**'
-      branches:
+      - 'build.ts'
+      - 'lib/**'
+      - 'validator/**'
+    branches:
       - main
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -19,14 +22,23 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v6
-      with:
-        fetch-depth: '0'
-    - run: |
-        chmod +x build_site.sh
-        ./build_site.sh _site/${{ github.ref_name }}
-    - uses: actions/upload-pages-artifact@v5
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          # Each package's version is the last commit that touched it, so the
+          # whole history has to be present for build.ts to read it.
+          fetch-depth: 0
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version-file: .dvmrc
+          cache: true
+      # Re-checked here, not just in validate.yml, so a scraper that fails
+      # validation can never reach the published index.
+      - name: Validate scrapers
+        run: deno -R -E ./validate.js --ci
+      - name: Build index
+        run: deno task build _site/${{ github.ref_name }}
+      - uses: actions/upload-pages-artifact@v5
 
   deploy:
     environment:

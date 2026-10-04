@@ -1,0 +1,21 @@
+name: Validate scrapers
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version-file: .dvmrc
+          cache: true
+      - run: deno -R -E ./validate.js --ci
+      # Catches packaging problems (a scraper with no name, a bad package
+      # layout) before they reach the deploy workflow.
+      - run: deno task build _site

@@ -1,0 +1,158 @@
+name: DLsite (ravend)
+sceneByFragment:
+  action: scrapeXPath
+  # expects RJ code as the title
+  queryURL: https://www.dlsite.com/maniax/work/=/product_id/{title}.html
+  #queryURL: https://www.dlsite.com/maniax/work/=/product_id/{title}.html/?locale=en_US
+  scraper: sceneScraper
+sceneByURL:
+  - action: scrapeXPath
+    url:
+      - dlsite.com/maniax/work/
+      - dlsite.com/bl-pro/work/
+    scraper: sceneScraper
+    queryURL: "{url}"
+sceneByName:
+  action: scrapeXPath
+  queryURL: https://www.dlsite.com/maniax/fsr/=/language/jp/sex_category%5B0%5D/male/keyword/{}/order%5B0%5D/trend/per_page/30/from/fs.header
+  scraper: sceneQueryScraper
+sceneByQueryFragment:
+  action: scrapeXPath
+  queryURL: "{url}"
+  #queryURLReplace:
+  #  url:
+  #    - regex: $
+  #      with: "/?locale=en_US"
+  scraper: sceneScraper
+galleryByFragment:
+  action: scrapeXPath
+  queryURL: https://www.dlsite.com/maniax/work/=/product_id/{title}.html
+  #queryURL: https://www.dlsite.com/maniax/work/=/product_id/{title}.html/?locale=en_US
+  scraper: galleryManiaxScraper
+galleryByURL:
+  - action: scrapeXPath
+    url:
+      - dlsite.com/maniax/work/
+      - dlsite.com/bl-pro/work/
+      - dlsite.com/girls/work/
+      - dlsite.com/bl/work
+      - dlsite.com/bl-touch
+      - dlsite.com/pro/work
+    scraper: galleryManiaxScraper
+    queryURL: "{url}"
+  - action: scrapeXPath
+    url:
+      - dlsite.com/books/work/
+    scraper: galleryBookScraper
+    queryURL: "{url}"
+
+xPathScrapers:
+  sceneQueryScraper:
+    scene:
+      Title: //dd[@class='work_name']/div[@class='multiline_truncate']/a/text()
+      URL: //dd[@class='work_name']/div[@class='multiline_truncate']/a/@href
+      # The listing markup puts the thumb inside a <thumb-with-ng-filter-block>
+      # custom element; the old <a class='work_thumb_inner'><img> path no
+      # longer exists. The candidates attribute lists a 240px thumb first but
+      # also a full-size one, and modpub serves the full size.
+      Image:
+        selector: //thumb-with-ng-filter-block/@*[contains(name(), 'thumb-candidates')]
+        postProcess:
+          - javascript: |
+              const m = /'(\/\/[^']*_img_main)_\d+x\d+\.jpg'/.exec(value);
+              if (!m) return "";
+              return "https:" + m[1].replace("/resize/", "/modpub/") + ".jpg";
+  sceneScraper:
+    scene:
+      Title: &titleSel //h1[@id='work_name']/text()
+      Date: &dateSel
+        selector: "//th[text() = '販売日']/following-sibling::td//text()|//th[text() = 'Release date']/following-sibling::td//text()"
+        postProcess:
+          - replace:
+              - regex: "Jan"
+                with: "01"
+              - regex: "Feb"
+                with: "02"
+              - regex: "Mar"
+                with: "03"
+              - regex: "Apr"
+                with: "04"
+              - regex: "May"
+                with: "05"
+              - regex: "Jun"
+                with: "06"
+              - regex: "Jul"
+                with: "07"
+              - regex: "Aug"
+                with: "08"
+              - regex: "Sep"
+                with: "09"
+              - regex: "Oct"
+                with: "10"
+              - regex: "Nov"
+                with: "11"
+              - regex: "Dec"
+                with: "12"
+              - regex: \s.+$
+                with: ""
+              - regex: (\d{2})/(\d{2})/(\d{4})
+                with: "${3}年${1}月${2}日"
+          - parseDate: 2006年01月02日
+      # Without concat only the first work_parts_area div survives, and on some
+      # works that first div is just a version-notes line, not the synopsis.
+      Details: &detailsSel
+        selector: //div[contains(@class,"work_parts_area")]
+        concat: "\n\n"
+      Tags: &tagsSel
+        Name: //div[@class='main_genre']/a/text()
+      Performers:
+        # only illustrators and voice actors, writers and musicians are not included
+        Name: "//th[text() = '声優']/following-sibling::td/a/text()|//th[text() = 'Voice Actor']/following-sibling::td/a/text()|//th[text() = 'イラスト']/following-sibling::td/a/text()|//th[text() = 'Illustration']/following-sibling::td/a/text()"
+      Studio: &studioSel
+        Name: //span[@class='maker_name']/a/text()
+      Image:
+        selector: //li[@class='slider_item active']/picture/img/@srcset
+        postProcess:
+          - replace:
+              - regex: ^
+                with: "https:"
+      URL: &urlSel //meta[@property='og:url']/@content
+  galleryManiaxScraper:
+    gallery:
+      Title: *titleSel
+      Date: *dateSel
+      Details: *detailsSel
+      Tags: *tagsSel
+      Code:
+        selector: //meta[@property='og:url']/@content
+        postProcess:
+          - replace:
+              - regex: .*product_id/([^.]+).*
+                with: $1
+      # Some works carry only a 作者 row and no イラスト row, so both are read.
+      # A gallery has one Photographer string, so the credits are joined rather
+      # than truncated to the first.
+      Photographer:
+        selector: "//th[text() = 'イラスト']/following-sibling::td/a/text()|//th[text() = '作者']/following-sibling::td/a/text()"
+        concat: " / "
+      Studio: *studioSel
+      URL: *urlSel
+  galleryBookScraper:
+    gallery:
+      Title: *titleSel
+      Date: *dateSel
+      Details: *detailsSel
+      Tags: *tagsSel
+      Code:
+        selector: //meta[@property='og:url']/@content
+        postProcess:
+          - replace:
+              - regex: .*product_id/([^.]+).*
+                with: $1
+      # for maniax author is the writer, for books this is illustrators
+      Photographer:
+        selector: "//th[text() = '著者']/following-sibling::td/a/text()|//th[text() = 'Author']/following-sibling::td/a/text()"
+        concat: " / "
+      Studio: *studioSel
+      URL: *urlSel
+# Last Updated Oct 5, 2026

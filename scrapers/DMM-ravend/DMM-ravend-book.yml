@@ -1,0 +1,57 @@
+name: DMM (ravend)
+galleryByURL:
+  - action: scrapeXPath
+    url:
+      - book.dmm.co.jp/
+    queryURL: "{url}"
+    scraper: bookScraper
+
+xPathScrapers:
+  # book.dmm.co.jp product pages (FANZAブックス / 電子書籍). The site is a
+  # Next.js app whose class names are styled-components hashes, so everything
+  # below anchors on data-testid attributes or og: meta tags instead.
+  bookScraper:
+    gallery:
+      Title: //meta[@property="og:title"]/@content
+      URL: //meta[@property="og:url"]/@content
+      # No Image here: ScrapedGallery has no Image field, so a cover cannot be
+      # scraped for a gallery at all. A cover-size URL was tried and silently
+      # dropped — the file only passed validation once it was removed.
+      # Selecting the text nodes rather than the span keeps the page's own line
+      # breaks: concat is applied after Stash strips newlines from each node.
+      Details:
+        selector: //span[@data-testid="description-text"]/text()
+        concat: "\n"
+      Date:
+        selector: //span[@data-testid="volume-detail-info-content-publish-date"]/text()
+        postProcess:
+          - replace:
+              - regex: (\d{4})/(\d{2})/(\d{2}).*
+                with: $1-$2-$3
+          - parseDate: 2006-01-02
+      # No 品番 on these pages; the content id in the URL is what DMM uses,
+      # same as the cid the doujin gallery scraper pulls out.
+      Code:
+        selector: //meta[@property="og:url"]/@content
+        postProcess:
+          - replace:
+              - regex: ^.*/product/\d+/([^/]+).*$
+                with: $1
+      # 作家. Several writers on one book collapse into one field, since a
+      # Stash gallery only has a single Photographer.
+      Photographer:
+        selector: //a[@data-testid="volume-detail-info-author"]/text()
+        concat: " / "
+      Studio:
+        Name: //dl[dt[text()="出版社"]]/dd/a/text()
+      Tags:
+        Name: //a[@data-testid="volume-detail-info-genre"]/text()
+driver:
+  cookies:
+    - CookieURL: "https://www.dmm.co.jp"
+      Cookies:
+        - Name: "age_check_done"
+          Domain: ".dmm.co.jp"
+          Value: "1"
+          Path: "/"
+# Last Updated Oct 5, 2026
