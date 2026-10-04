@@ -50,7 +50,7 @@ xPathScrapers:
   sceneQueryScraper:
     scene:
       Title: //dd[@class='work_name']/div[@class='multiline_truncate']/a/text()
-      URL: //dd[@class='work_name']/div[@class='multiline_truncate']/a/@href
+      URLs: //dd[@class='work_name']/div[@class='multiline_truncate']/a/@href
       # The listing markup puts the thumb inside a <thumb-with-ng-filter-block>
       # custom element; the old <a class='work_thumb_inner'><img> path no
       # longer exists. The candidates attribute lists a 240px thumb first but
@@ -116,7 +116,7 @@ xPathScrapers:
           - replace:
               - regex: ^
                 with: "https:"
-      URL: &urlSel //meta[@property='og:url']/@content
+      URLs: &urlSel //meta[@property='og:url']/@content
   galleryManiaxScraper:
     gallery:
       Title: *titleSel
@@ -136,7 +136,7 @@ xPathScrapers:
         selector: "//th[text() = 'イラスト']/following-sibling::td/a/text()|//th[text() = '作者']/following-sibling::td/a/text()"
         concat: " / "
       Studio: *studioSel
-      URL: *urlSel
+      URLs: *urlSel
   galleryBookScraper:
     gallery:
       Title: *titleSel
@@ -154,5 +154,5 @@ xPathScrapers:
         selector: "//th[text() = '著者']/following-sibling::td/a/text()|//th[text() = 'Author']/following-sibling::td/a/text()"
         concat: " / "
       Studio: *studioSel
-      URL: *urlSel
+      URLs: *urlSel
 # Last Updated Oct 5, 2026

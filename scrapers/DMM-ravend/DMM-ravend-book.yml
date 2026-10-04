@@ -13,7 +13,7 @@ xPathScrapers:
   bookScraper:
     gallery:
       Title: //meta[@property="og:title"]/@content
-      URL: //meta[@property="og:url"]/@content
+      URLs: //meta[@property="og:url"]/@content
       # No Image here: ScrapedGallery has no Image field, so a cover cannot be
       # scraped for a gallery at all. A cover-size URL was tried and silently
       # dropped — the file only passed validation once it was removed.

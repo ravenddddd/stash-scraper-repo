@@ -61,7 +61,7 @@ xPathScrapers:
         Name:
           # Return each <a> as its own matched node so Stash creates separate tags.
           selector: //*[self::td or self::th or self::dt][contains(normalize-space(.), "ジャンル")]/following-sibling::*[1]//a[normalize-space()]
-      URL: //meta[@property="og:url"]/@content
+      URLs: //meta[@property="og:url"]/@content
 driver:
   cookies:
     - CookieURL: "https://www.dmm.co.jp"

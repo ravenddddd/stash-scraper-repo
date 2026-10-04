@@ -29,7 +29,7 @@ xPathScrapers:
       $videoItem: //*[@id="list"]
     scene:
       Title: $videoItem/li/div/p/a/span[@class="txt"]
-      URL:
+      URLs:
         selector: $videoItem/li/div/p/a/@href
       Image:
         selector: $videoItem/li/div/p/a/span[@class="img"]/img/@src
@@ -42,7 +42,7 @@ xPathScrapers:
       $videoItem: //*[@id="list"]
     scene:
       Title: $videoItem/li/div/p/a/span[@class="txt"]
-      URL:
+      URLs:
         selector: $videoItem/li/div/p/a/@href
       Image:
         selector: $videoItem/li/div/p/a/span[@class="img"]/img/@src
@@ -101,7 +101,7 @@ xPathScrapers:
                 #ミステリア/妄想族: Mystery/妄想族
 
       Image: //meta[@property="og:image"]/@content
-      URL:
+      URLs:
         selector: //meta[@property="og:url"]/@content
       Director: //td[contains(.,"監督") and @class="nw"]/following-sibling::td/a
 driver:
