@@ -1,0 +1,71 @@
+name: Melonbooks (ravend)
+galleryByURL:
+  - action: scrapeXPath
+    url:
+      - melonbooks.co.jp/detail/detail.php
+    queryURL: "{url}"
+    scraper: melonbookItem
+
+xPathScrapers:
+  melonbookItem:
+    gallery:
+      # og:title carries a "（サークル名）の通販・購入はメロンブックス" suffix; the
+      # page header is the work name on its own.
+      Title: //h1[contains(@class,"page-header")]//text()
+      URLs: //meta[@property="og:url"]/@content
+      # The seller's comment. It uses <br> per line, and Stash drops newlines
+      # before concat runs, so the lines are re-joined by selecting the text
+      # nodes rather than the paragraph. Blank lines are lost with them.
+      Details:
+        selector: //h3[contains(normalize-space(.), "作品詳細")]/following-sibling::div[1]//p/text()
+        concat: "\n"
+      Code:
+        selector: //meta[@property="og:url"]/@content
+        postProcess:
+          - replace:
+              - regex: .*product_id=(\d+).*
+                with: $1
+      Date:
+        selector: //tr[th[normalize-space()="発行日"]]/td//text()
+        postProcess:
+          - replace:
+              - regex: (\d{4})/(\d{1,2})/(\d{1,2}).*
+                with: $1-$2-$3
+          - parseDate: 2006-1-2
+      # The circle cell appends "(作品数:N)" inside the link text, and both this
+      # cell and 作家名 carry a favourite-heart link with href="#" beside the
+      # real one, which every selector below excludes.
+      Studio:
+        Name:
+          selector: //tr[th[normalize-space()="サークル名"]]/td//a[not(@href="#")][1]/text()
+          postProcess:
+            - replace:
+                - regex: \s*\(作品数:\d+\)\s*$
+                  with: ""
+      Photographer:
+        selector: //tr[th[normalize-space()="作家名"]]/td//a[not(@href="#")]//text()
+        concat: " / "
+      # Every ?tag= link on the page, which is the content tags and the seasonal
+      # campaign tags in one flat list - there is no markup separating them, the
+      # order is not reliable, and a keyword filter drops real tags (JK) while
+      # keeping campaign names. Taken whole by choice; narrow this selector or
+      # add a replace here if the campaign names become a nuisance.
+      Tags:
+        Name:
+          selector: //div[contains(@class,"item-detail2")]//a[contains(@href, "/tags/index.php?tag=")]/text()
+          postProcess:
+            - replace:
+                - regex: ^#
+                  with: ""
+driver:
+  cookies:
+    # Without this every adult item redirects to an age gate, and the page
+    # returned has none of the fields above. It is what the gate's 表示する
+    # link sets.
+    - CookieURL: "https://www.melonbooks.co.jp"
+      Cookies:
+        - Name: "AUTH_ADULT"
+          Domain: ".melonbooks.co.jp"
+          Value: "1"
+          Path: "/"
+# Last Updated Oct 5, 2026
