@@ -15,6 +15,7 @@ https://ravenddddd.github.io/stash-scraper-repo/main/index.yml
 |---|---|---|
 | `DMM-ravend` | `DMM-ravend` (scenes), `DMM-ravend-doujin` (galleries), `DMM-ravend-book` (galleries) | `www.dmm.co.jp` mono, `dmm.co.jp/dc/doujin`, `book.dmm.co.jp` |
 | `DLsite-ravend` | `DLsite-ravend` | `dlsite.com` work pages |
+| `Toranoana-ravend` | `Toranoana-ravend` | `ec.toranoana.jp` item pages, both adult storefronts |
 
 The `-ravend` suffix keeps these ids from colliding with the community
 repository's `DMM` and `DLsite`. **Stash keys a scraper by its filename**, so two
@@ -77,6 +78,9 @@ scrapers/
     DMM-ravend.yml           scenes
     DMM-ravend-doujin.yml    galleries
     DMM-ravend-book.yml      galleries
+  Toranoana-ravend/
+    package                  name: Toranoana (ravend)
+    Toranoana-ravend.yml
 ```
 
 The `package` file is what makes a folder one package instead of one per

@@ -1,0 +1,50 @@
+name: Toranoana (ravend)
+galleryByURL:
+  # The two adult storefronts. The all-ages ones live on ecs.toranoana.jp and
+  # share this markup, but are deliberately left out.
+  - action: scrapeXPath
+    url:
+      - ec.toranoana.jp/joshi_r/ec/item/
+      - ec.toranoana.jp/tora_r/ec/item/
+    queryURL: "{url}"
+    scraper: toranoanaItem
+
+xPathScrapers:
+  toranoanaItem:
+    gallery:
+      Title: //meta[@property="og:title"]/@content
+      URLs: //meta[@property="og:url"]/@content
+      # og:description is the seller's own blurb; there is no longer article on
+      # the page. Some circles write one line, some write a paragraph.
+      Details: //meta[@property="og:description"]/@content
+      Code:
+        selector: //meta[@property="og:url"]/@content
+        postProcess:
+          - replace:
+              - regex: .*/item/(\d+).*
+                with: $1
+      # The spec table's label cells are not uniform: some wrap their text in a
+      # span, 初出イベント carries an extra class, and ジャンル/サブジャンル hides
+      # a <br> between the two words. Matching on normalize-space() rather than
+      # exact text() survives all three.
+      Date:
+        selector: //td[contains(@class,"fnt-bold")][contains(normalize-space(.), "発行日")]/following-sibling::td[1]//text()
+        postProcess:
+          - replace:
+              - regex: (\d{4})/(\d{1,2})/(\d{1,2}).*
+                with: $1-$2-$3
+          - parseDate: 2006-1-2
+      # Value cells carry a 入荷アラート button beside the real value; it is the
+      # only link with href="#" and is excluded everywhere below.
+      Studio:
+        Name: //td[contains(@class,"fnt-bold")][contains(normalize-space(.), "サークル名")]/following-sibling::td[1]//a[not(@href="#")][1]//text()
+      Photographer:
+        selector: //td[contains(@class,"fnt-bold")][contains(normalize-space(.), "作家")]/following-sibling::td[1]//a[not(@href="#")]//text()
+        concat: " / "
+      # The only content tags on the page — ジャンル/サブジャンル is the source
+      # work and メインキャラ the characters, neither of which is a content tag.
+      # The # is in its own span, and this block appears twice, once for PC and
+      # once for mobile; cleanResults drops the duplicate.
+      Tags:
+        Name: //div[contains(@class,"product-detail-tag")]//a/span[not(contains(@class,"hash"))]/text()
+# Last Updated Oct 5, 2026
