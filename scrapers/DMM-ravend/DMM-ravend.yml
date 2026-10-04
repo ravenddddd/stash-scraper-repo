@@ -59,7 +59,11 @@ xPathScrapers:
   sceneScraper:
     scene:
       Title: //meta[@property="og:title"]/@content
-      Details: //td[@valign="top"]//div[@class="mg-b20 lh4"]/p[@class="mg-b20"]/text()
+      # @id="mu" pins the one synopsis cell. The @valign="top" form this
+      # replaced matches 13 cells on a mono page and relies on the descendant
+      # chain below to narrow it to one; if a second cell ever grows the same
+      # div/p shape, Details would silently keep only the first.
+      Details: //td[@id="mu"]//div[@class="mg-b20 lh4"]/p[@class="mg-b20"]/text()
       Date:
         selector: //td[contains(.,"発売日") and @class="nw"]/following-sibling::td
         postProcess:
